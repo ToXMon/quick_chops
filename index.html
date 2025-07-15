@@ -119,6 +119,11 @@
             padding: 0.75rem;
             width: 100%;
             transition: border-color 0.3s ease;
+            background-color: #ffffff !important;
+            color: #3d405b !important;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
 
         .contact-form input:focus,
@@ -224,7 +229,12 @@
     <section id="contact" class="py-16">
         <div class="container">
             <h2 class="text-4xl text-center mb-12">Get in Touch</h2>
-            <form action="https://formspree.io/f/mvgqokgk" method="POST" class="contact-form mx-auto grid gap-6">
+            <form action="https://formspree.io/f/mvgqokgk" method="POST" class="contact-form mx-auto grid gap-6"
+                id="contact-form">
+                <div>
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
                 <div>
                     <label for="email">Your Email</label>
                     <input type="email" id="email" name="email" required>
@@ -233,7 +243,14 @@
                     <label for="message">Your Message</label>
                     <textarea id="message" name="message" rows="5" required></textarea>
                 </div>
-                <button type="submit" class="btn primary">Send Message</button>
+
+                <button type="submit" class="btn primary" id="submit-btn">
+                    <span id="btn-text">Send Message</span>
+                    <span id="btn-loading" style="display: none;"> - Sending...</span>
+                </button>
+
+                <!-- Response messages -->
+                <div id="form-messages"></div>
             </form>
             <p class="text-center mt-4">Or email us at <a
                     href="mailto:contact@quickchops.com">contact@quickchops.com</a></p>
@@ -256,6 +273,65 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        // Simple form submission with UX feedback
+        document.getElementById('contact-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('submit-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnLoading = document.getElementById('btn-loading');
+            const messagesDiv = document.getElementById('form-messages');
+
+            // Show loading state
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+            submitBtn.disabled = true;
+            messagesDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    // Success
+                    messagesDiv.innerHTML = `
+                        <div class="p-4 bg-green-100 border border-green-400 text-green-700 rounded mt-4">
+                            <strong>Thank you!</strong> Your message has been sent successfully. We'll get back to you soon.
+                        </div>
+                    `;
+                    form.reset();
+                } else {
+                    // Error
+                    messagesDiv.innerHTML = `
+                        <div class="p-4 bg-red-100 border border-red-400 text-red-700 rounded mt-4">
+                            <strong>Oops!</strong> There was an error sending your message. Please try again or email us directly.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                // Network error
+                messagesDiv.innerHTML = `
+                    <div class="p-4 bg-red-100 border border-red-400 text-red-700 rounded mt-4">
+                        <strong>Network Error!</strong> Please check your connection and try again, or email us directly at contact@quickchops.com
+                    </div>
+                `;
+            } finally {
+                // Reset button state
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
 
 </body>
 
