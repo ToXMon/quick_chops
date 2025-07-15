@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Chops - Authentic Smoky Jollof Rice</title>
+    <!-- Pico CSS CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Tailwind Config for Branding -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#e07a5f', // Peach/orange from packaging
+                        secondary: '#3d405b', // Dark brown for text
+                        accent: '#f2cc8f', // Light peach for backgrounds
+                        smoke: '#6b705c', // Muted green-gray for accents
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'], // Modern sans-serif for body
+                        serif: ['Playfair Display', 'serif'], // Elegant serif for headings
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- HTMX CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
+    <!-- Google Fonts for Custom Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        body {
+            background-color: #fdfaf7;
+            /* Soft light peach background */
+            color: #3d405b;
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Playfair Display', serif;
+            color: #e07a5f;
+        }
+
+        .hero {
+            background-image: url('img/hero-bg.jpg');
+            /* Assume you upload the packaging image as hero-bg.jpg */
+            background-size: cover;
+            background-position: center;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(224, 122, 95, 0.5);
+            /* Overlay for readability */
+        }
+
+        .reveal-content {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .reveal-content.htmx-swapping {
+            opacity: 0;
+        }
+
+        .reveal-content.htmx-settling {
+            opacity: 1;
+        }
+
+        /* Enhanced Form Styles */
+        .contact-form {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 32rem;
+            /* Default for mobile */
+        }
+
+        @media (min-width: 768px) {
+            .contact-form {
+                max-width: 48rem;
+                /* Wider on desktop */
+            }
+        }
+
+        .contact-form label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            border-color: #e07a5f;
+            outline: none;
+        }
+
+        .contact-form button {
+            margin-top: 1rem;
+        }
+
+        /* Footer Styles - Ensure text visibility */
+        footer {
+            background-color: #3d405b !important;
+        }
+
+        footer p,
+        footer h3 {
+            color: #ffffff !important;
+        }
+
+        footer h3 {
+            color: #f2cc8f !important;
+        }
+
+        footer a {
+            color: #f2cc8f !important;
+        }
+
+        footer a:hover {
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+
+<body hx-boost="true"> <!-- Enable HTMX boosting for smooth navigation if multi-page -->
+
+    <!-- Hero Section -->
+    <section class="hero relative">
+        <div class="container relative z-10">
+            <h1 class="text-5xl md:text-7xl font-bold text-white mb-4">Quick Chops</h1>
+            <p class="text-2xl md:text-4xl text-white mb-6">Fast, Flavorful, Authentic Smoky Jollof Rice</p>
+            <p class="text-lg text-white max-w-2xl mx-auto">Experience the rich, smoky taste of Nigerian party jollof
+                rice, packaged for your convenience. From our family kitchen in Mississippi to yours.</p>
+            <a href="#contact"
+                class="btn primary mt-8 inline-block px-8 py-4 bg-primary text-white rounded-lg shadow-lg hover:bg-secondary transition">Get
+                Yours Today</a>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="py-16 bg-accent">
+        <div class="container grid md:grid-cols-2 gap-8">
+            <div>
+                <h2 class="text-4xl mb-6">Our Story: From Nigeria to Mississippi</h2>
+                <p class="mb-4">Founded by a passionate home cook who grew up in Nigeria and emigrated to the US over 20
+                    years ago, Quick Chops brings the authentic flavors of West African cuisine to your table.</p>
+                <p class="mb-4">Settling in Mississippi, our founder missed the smoky, party-style jollof rice that
+                    brings people together. Now, she's sharing that homemade goodness in convenient packages.</p>
+                <p>Every batch embodies the ethos of authentic, homemade Nigerian food – rich, smoky, and full of love.
+                </p>
+            </div>
+            <div>
+                <img src="img/story.jpg" alt="Symbolic fusion of Mississippi and Nigeria landscapes"
+                    class="rounded-lg shadow-xl opacity-90 hover:opacity-100 transition-opacity">
+                <!-- Integrated symbolic image here for flair -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Section -->
+    <section class="py-16">
+        <div class="container">
+            <h2 class="text-4xl text-center mb-12">Our Flagship Product: Smoky Jollof Rice</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card p-6 bg-white rounded-lg shadow-md">
+                    <img src="img/packaging.jpg" alt="Smoky Jollof Rice Packaging" class="mb-4 rounded">
+                    <!-- Use attached design image -->
+                    <h3 class="text-2xl mb-2">Packaged Perfection</h3>
+                    <p>Ready-to-heat pouches that capture the essence of party jollof – smoky, flavorful, and authentic.
+                    </p>
+                </div>
+                <div class="card p-6 bg-white rounded-lg shadow-md">
+                    <h3 class="text-2xl mb-2">Key Features</h3>
+                    <ul class="list-disc pl-6">
+                        <li>Rich smoky taste from traditional Nigerian methods</li>
+                        <li>All-natural ingredients, no preservatives</li>
+                        <li>Easy to prepare in minutes</li>
+                        <li>Perfect for parties, meals, or quick chops</li>
+                    </ul>
+                </div>
+                <div class="card p-6 bg-white rounded-lg shadow-md">
+                    <h3 class="text-2xl mb-2">Why Party Jollof?</h3>
+                    <p>The coveted smoky flavor comes from open-fire cooking traditions. We recreate that magic in every
+                        package.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16">
+        <div class="container">
+            <h2 class="text-4xl text-center mb-12">Get in Touch</h2>
+            <form action="https://formspree.io/f/mvgqokgk" method="POST" class="contact-form mx-auto grid gap-6">
+                <div>
+                    <label for="email">Your Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div>
+                    <label for="message">Your Message</label>
+                    <textarea id="message" name="message" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn primary">Send Message</button>
+            </form>
+            <p class="text-center mt-4">Or email us at <a
+                    href="mailto:contact@quickchops.com">contact@quickchops.com</a></p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 bg-secondary text-white">
+        <div class="container">
+            <div class="text-center">
+                <h3 class="text-2xl font-serif text-accent mb-4">Quick Chops</h3>
+                <p class="text-lg mb-2 opacity-90">© 2025 Quick Chops. All rights reserved.</p>
+                <p class="text-lg mb-6 opacity-90">Made with love from Mississippi, inspired by Nigeria.</p>
+                <div class="border-t border-gray-600 pt-6 mt-6">
+                    <p class="text-sm opacity-75">
+                        <a href="mailto:contact@quickchops.com"
+                            class="text-accent hover:text-white transition-colors">contact@quickchops.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>
