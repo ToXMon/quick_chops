@@ -14,6 +14,8 @@ Quick Chops brings the authentic flavors of West African cuisine to your table. 
 - **Accessibility Compliant** - Following web accessibility best practices
 - **Contact Integration** - Ready-to-use contact form with Formspree integration
 - **SEO Friendly** - Proper meta tags and semantic HTML structure
+- **🤖 AI-Powered Chat Assistant** - RAG-enabled chatbot using Venice AI with web search capabilities
+- **Smart Fallback System** - Graceful degradation when AI services are unavailable
 
 ## 🛠 Tech Stack
 
@@ -22,6 +24,7 @@ Quick Chops brings the authentic flavors of West African cuisine to your table. 
 - **Tailwind CSS** - Utility-first CSS framework
 - **Pico CSS** - Minimal CSS framework for base styling
 - **HTMX** - Modern interactions without heavy JavaScript
+- **Venice AI** - LLM integration with web search capabilities for RAG
 - **Google Fonts** - Custom typography (Inter + Playfair Display)
 
 ## 🎨 Design System
@@ -40,11 +43,15 @@ Quick Chops brings the authentic flavors of West African cuisine to your table. 
 
 ```
 quick_chops/
-├── index.html          # Main landing page
+├── index.html          # Main landing page with integrated chat
+├── js/                 # JavaScript modules
+│   ├── config.js       # Configuration management for Venice AI
+│   └── venice-ai.js    # Venice AI integration and RAG functionality
 ├── img/               # Image assets
 │   ├── packaging.jpg  # Product packaging image
 │   └── story.jpg      # Story section image
 ├── .kiro/             # Kiro IDE configuration
+├── VENICE_SETUP.md    # Venice AI configuration guide
 └── README.md          # Project documentation
 ```
 
@@ -75,6 +82,21 @@ php -S localhost:8000
 ```
 
 3. Visit `http://localhost:8000` in your browser
+
+## 🤖 Venice AI Chat Assistant Setup
+
+The website includes an AI-powered chat assistant using Venice AI's RAG capabilities. See [VENICE_SETUP.md](VENICE_SETUP.md) for detailed configuration instructions.
+
+### Quick Setup
+1. Get your Venice AI API key
+2. Set it using: `setVeniceApiKey("your-api-key-here")` in browser console
+3. The chat widget will automatically use Venice AI for enhanced responses
+
+### Features
+- **RAG (Retrieval-Augmented Generation)** - Combines company knowledge with web search
+- **Smart Fallback** - Works even without Venice AI configuration
+- **Context-Aware** - Understands Quick Chops products and company information
+- **Web Search Enhanced** - Uses Venice AI's web search capabilities for comprehensive answers
 
 ## 📧 Contact Form Setup
 

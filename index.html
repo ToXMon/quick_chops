@@ -32,6 +32,12 @@
     </script>
     <!-- HTMX CDN -->
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
+    <!-- Configuration -->
+    <script src="js/config.js"></script>
+    <!-- Venice AI Integration -->
+    <script src="js/venice-ai.js"></script>
+    <!-- Development Validator -->
+    <script src="js/validator.js"></script>
     <!-- Google Fonts for Custom Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -919,6 +925,65 @@
     </section>
     </main>
 
+    <!-- Q&A Chat Widget -->
+    <div id="chat-widget" class="fixed bottom-4 right-4 z-50">
+        <!-- Chat Toggle Button -->
+        <button id="chat-toggle" class="bg-primary hover:bg-primaryButton text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-primary focus:ring-opacity-50" aria-label="Open chat assistance">
+            <svg id="chat-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Chat Panel -->
+        <div id="chat-panel" class="hidden absolute bottom-16 right-0 w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col">
+            <!-- Chat Header -->
+            <div class="bg-primary text-white p-4 rounded-t-lg">
+                <h3 class="font-semibold text-lg">Quick Chops Assistant</h3>
+                <p class="text-sm opacity-90">Ask me anything about our jollof rice!</p>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3">
+                <div class="flex items-start space-x-2">
+                    <div class="bg-primary text-white p-2 rounded-full flex-shrink-0">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"></path>
+                        </svg>
+                    </div>
+                    <div class="bg-gray-100 p-3 rounded-lg max-w-xs">
+                        <p class="text-sm text-secondary">Hello! I'm here to help you learn about Quick Chops smoky jollof rice. What would you like to know?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex space-x-2">
+                    <input 
+                        id="chat-input" 
+                        type="text" 
+                        placeholder="Ask about our jollof rice..." 
+                        class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary text-sm"
+                        maxlength="500"
+                    >
+                    <button 
+                        id="chat-send" 
+                        class="bg-primary hover:bg-primaryButton text-white p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+                        aria-label="Send message"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Powered by Venice AI</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="py-12 bg-secondary text-white">
         <div class="container">
@@ -1087,6 +1152,232 @@
                     submitBtn.removeAttribute('aria-busy');
                 }
             });
+        });
+
+        // Chat Widget Functionality
+        const chatToggle = document.getElementById('chat-toggle');
+        const chatPanel = document.getElementById('chat-panel');
+        const chatIcon = document.getElementById('chat-icon');
+        const closeIcon = document.getElementById('close-icon');
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+        const chatMessages = document.getElementById('chat-messages');
+
+        let isTyping = false;
+
+        // Toggle chat panel
+        chatToggle.addEventListener('click', function() {
+            const isHidden = chatPanel.classList.contains('hidden');
+            
+            if (isHidden) {
+                chatPanel.classList.remove('hidden');
+                chatIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+                chatInput.focus();
+            } else {
+                chatPanel.classList.add('hidden');
+                chatIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            }
+        });
+
+        // Send message functionality
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message || isTyping) return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            chatInput.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                // Get response from Venice AI
+                const response = await getVeniceResponse(message);
+                hideTypingIndicator();
+                addMessage(response, 'assistant');
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('I apologize, but I\'m having trouble connecting right now. Please try again later or contact us directly at contact@quickchops.com', 'assistant');
+                console.error('Chat error:', error);
+            }
+        }
+
+        // Add message to chat
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start space-x-2';
+            
+            if (sender === 'user') {
+                messageDiv.className += ' justify-end';
+                messageDiv.innerHTML = `
+                    <div class="bg-primary text-white p-3 rounded-lg max-w-xs">
+                        <p class="text-sm">${escapeHtml(text)}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="bg-primary text-white p-2 rounded-full flex-shrink-0">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"></path>
+                        </svg>
+                    </div>
+                    <div class="bg-gray-100 p-3 rounded-lg max-w-xs">
+                        <p class="text-sm text-secondary">${escapeHtml(text)}</p>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            isTyping = true;
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'flex items-start space-x-2';
+            typingDiv.innerHTML = `
+                <div class="bg-primary text-white p-2 rounded-full flex-shrink-0">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"></path>
+                    </svg>
+                </div>
+                <div class="bg-gray-100 p-3 rounded-lg">
+                    <div class="flex space-x-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            isTyping = false;
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Venice AI Integration
+        async function getVeniceResponse(userMessage) {
+            // Check if this is a Quick Chops related question
+            const quickChopsContext = getQuickChopsContext();
+            
+            // For now, implement a basic response system that can be enhanced with Venice AI
+            // This will be replaced with actual Venice AI API calls
+            const response = await processWithRAG(userMessage, quickChopsContext);
+            
+            return response;
+        }
+
+        // Get Quick Chops specific context for RAG
+        function getQuickChopsContext() {
+            // Use global configuration if available
+            if (window.QuickChopsConfig && window.QuickChopsConfig.context) {
+                return window.QuickChopsConfig.context;
+            }
+            
+            // Fallback context
+            return {
+                company: "Quick Chops",
+                product: "Authentic Smoky Jollof Rice",
+                origin: "Nigerian cuisine brought to Mississippi",
+                features: [
+                    "Rich smoky taste from traditional Nigerian methods",
+                    "All-natural ingredients, no preservatives", 
+                    "Easy to prepare in minutes",
+                    "Perfect for parties, meals, or quick chops"
+                ],
+                story: "Founded by a passionate home cook who grew up in Nigeria and emigrated to the US over 20 years ago",
+                contact: "contact@quickchops.com",
+                specialty: "Party-style jollof rice with authentic smoky flavor"
+            };
+        }
+
+        // Process message with RAG (Enhanced with Venice AI)
+        async function processWithRAG(userMessage, context) {
+            try {
+                // First try Venice AI for enhanced RAG processing
+                if (window.veniceAI) {
+                    const veniceResponse = await window.veniceAI.processQuery(userMessage, context);
+                    return veniceResponse;
+                } else {
+                    throw new Error('Venice AI not available');
+                }
+            } catch (error) {
+                console.warn('Venice AI unavailable, using fallback:', error.message);
+                
+                // Fallback to basic keyword matching if Venice AI fails
+                return getBasicResponse(userMessage, context);
+            }
+        }
+
+        // Basic response system as fallback
+        function getBasicResponse(userMessage, context) {
+            const lowerMessage = userMessage.toLowerCase();
+            
+            // Basic keyword matching for common questions
+            if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('buy')) {
+                return "I'd be happy to help with pricing information! Please contact us directly at contact@quickchops.com for current pricing and ordering details. We offer authentic smoky jollof rice that's perfect for any occasion.";
+            }
+            
+            if (lowerMessage.includes('ingredient') || lowerMessage.includes('allerg')) {
+                return "Our jollof rice is made with all-natural ingredients and no preservatives. For specific ingredient lists and allergy information, please contact us at contact@quickchops.com so we can provide detailed information for your dietary needs.";
+            }
+            
+            if (lowerMessage.includes('cook') || lowerMessage.includes('prepare') || lowerMessage.includes('heat')) {
+                return "Our jollof rice is super easy to prepare - just heat and enjoy! It comes in convenient ready-to-heat pouches that capture the authentic smoky flavor of traditional Nigerian party jollof. For detailed preparation instructions, contact us at contact@quickchops.com.";
+            }
+            
+            if (lowerMessage.includes('story') || lowerMessage.includes('origin') || lowerMessage.includes('nigeria')) {
+                return `Our founder grew up in Nigeria and moved to Mississippi over 20 years ago. Missing the authentic smoky party jollof from home, she started Quick Chops to share that homemade goodness in convenient packages. Every batch embodies authentic Nigerian flavors with the love of traditional cooking.`;
+            }
+            
+            if (lowerMessage.includes('smoky') || lowerMessage.includes('flavor') || lowerMessage.includes('taste')) {
+                return "The signature smoky flavor comes from traditional Nigerian open-fire cooking methods. We recreate that authentic party jollof magic in every package - rich, smoky, and full of the flavors that bring people together.";
+            }
+            
+            if (lowerMessage.includes('ship') || lowerMessage.includes('deliver') || lowerMessage.includes('order')) {
+                return "For shipping and delivery information, please contact us at contact@quickchops.com. We'll be happy to discuss availability in your area and help you get our authentic smoky jollof rice delivered to you.";
+            }
+
+            // Default response for unmatched queries
+            return `Thank you for your question about Quick Chops! While I can provide basic information about our authentic smoky jollof rice, for the most detailed and up-to-date information, I recommend contacting us directly at contact@quickchops.com. Our team can provide comprehensive answers about our products, ingredients, pricing, and availability. Is there anything specific about our Nigerian-inspired jollof rice I can help you with?`;
+        }
+
+        // Event listeners for chat
+        chatSend.addEventListener('click', sendMessage);
+        
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Close chat when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!chatToggle.contains(e.target) && !chatPanel.contains(e.target) && !chatPanel.classList.contains('hidden')) {
+                chatPanel.classList.add('hidden');
+                chatIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            }
         });
     </script>
 
